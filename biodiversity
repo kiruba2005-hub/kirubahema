@@ -1,0 +1,63 @@
+import java.util.*;
+
+class Observation {
+    String id, species, imagePath;
+    double lat, lon;
+    long time;
+
+    Observation(String id, String species, double lat, double lon, long time, String imagePath) {
+        this.id = id;
+        this.species = species;
+        this.lat = lat;
+        this.lon = lon;
+        this.time = time;
+        this.imagePath = imagePath;
+    }
+
+    @Override
+    public String toString() {
+        return species + " at (" + lat + "," + lon + ") [" + imagePath + "]";
+    }
+}
+
+public class Main {
+
+    // Collections
+    static List<Observation> all = new ArrayList<>();
+    static Map<String, List<Observation>> bySpecies = new HashMap<>();
+    static Map<String, String> images = new HashMap<>();
+
+    // Add observation
+    static void add(Observation o) {
+        all.add(o);
+        bySpecies.computeIfAbsent(o.species, k -> new ArrayList<>()).add(o);
+        images.put(o.id, o.imagePath);
+    }
+
+    // Query by species (FIXED)
+    static List<Observation> sightings(String sp) {
+        return bySpecies.getOrDefault(sp, new ArrayList<>());
+    }
+
+    // Nearby search (simple distance in degrees)
+    static List<Observation> nearby(double lat, double lon, double r) {
+        List<Observation> res = new ArrayList<>();
+        for (Observation o : all) {
+            double d = Math.sqrt(Math.pow(o.lat - lat, 2) + Math.pow(o.lon - lon, 2));
+            if (d <= r) {
+                res.add(o);
+            }
+        }
+        return res;
+    }
+
+    public static void main(String[] args) {
+
+        add(new Observation("1", "Peacock", 11.0, 76.9, System.currentTimeMillis(), "peacock.jpg"));
+        add(new Observation("2", "Tiger", 11.1, 76.8, System.currentTimeMillis(), "tiger.jpg"));
+
+        System.out.println("Peacock sightings: " + sightings("Peacock"));
+        System.out.println("Nearby (11.0,76.9,r=0.2): " + nearby(11.0, 76.9, 0.2));
+        System.out.println("Image for obs 2: " + images.get("2"));
+    }
+}
